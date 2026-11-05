@@ -1,8 +1,25 @@
 
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <sstream>
 
 using namespace std;
+
+string string_cents(float usd)
+{
+  stringstream ss;
+  ss << fixed << setprecision(2) << usd;
+  return ss.str();
+}
+
+void display_beverage_menu()
+{
+  cout << "Please pick an option ($0.25 each):" << endl;
+  cout << "    C/c: Coffee" << endl;
+  cout << "    T/t: Tea" << endl;
+  cout << "    Q/q: Quit" << endl;
+}
 
 int main()
 {
@@ -15,7 +32,6 @@ int main()
   char uc1;
   int amount = 0;
   float total = 0.0;
-  float totalBalance = 0.0;
 
   cout << "Welcome to my Coffee/Tea Vending Machine!" << endl;
   cout << endl;
@@ -31,30 +47,49 @@ int main()
       cin >> coin;
 
       // TODO validate integer
+      const int END_SENTINEL = 0;
 
-      switch (coin)
+      enum
       {
-      case 0: // fallthrough
-        nextCoin = false;
-      case 5:  // fallthrough
-      case 10: // fallthrough
-      case 25:
-        sumCoin = coin + sumCoin;
-        break;
-      default:
-        cout << "Invalid value" << endl;
+        NICKEL = 5,
+        DIME = 10,
+        QUARTER = 25
+      };
+
+      if (cin)
+      {
+        switch (coin)
+        {
+        case END_SENTINEL: // fallthrough
+          nextCoin = false;
+          break;
+        case NICKEL: // fallthrough
+        case DIME:   // fallthrough
+        case QUARTER:
+          sumCoin = coin + sumCoin;
+          break;
+        default:
+          cout << "Invalid value" << endl;
+        }
+      }
+      else
+      {
+        cin.clear();
+        // to ignore all to end of line needs #include <limits>
+        // cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        char c = cin.get();
+        cout << "ERROR, NOT AN INTEGER: " << c << endl;
       }
     }
 
     balance = static_cast<float>(sumCoin) / 100.0;
-    cout << fixed << setprecision(2) << endl;
-    cout << "Your balance is $" << balance << endl;
-    cout << endl;
 
-    cout << "Please pick an option ($0.25 each):" << endl;
-    cout << "    C/c: Coffee" << endl;
-    cout << "    T/t: Tea" << endl;
-    cout << "    Q/q: Quit" << endl;
+    // Display balance
+    cout << "Your balance is $ " << string_cents(balance) << endl;
+    
+    
+    display_beverage_menu();
     cin >> uc1;
     cout << "    >> " << uc1 << endl;
 
@@ -63,7 +98,6 @@ int main()
       cout << "How many would you like? ";
       cin >> amount;
       total = (coffee * amount);
-      totalBalance = balance - total;
       cout << amount << endl;
     }
     else if ((uc1 == 't') or (uc1 == 'T'))
@@ -71,7 +105,6 @@ int main()
       cout << "How many would you like? ";
       cin >> amount;
       total = (tea * amount);
-      totalBalance = balance - total;
       cout << amount << endl;
       cout << endl;
     }
@@ -87,20 +120,20 @@ int main()
       cout << "Invalid input!!" << endl;
     }
 
-    if (balance > total)
+    cout << "Your total is $" << total << endl;
+    if (balance >= total)
     {
-      cout << "Your total is $" << total << endl;
-      cout << "Your balance is $" << totalBalance << endl;
-      cout << endl;
-      cout << "Thank you for using my Vending Machine Program!" << endl;
+      balance = balance - total;
       next = false;
+      cout << "Your change is $" << string_cents(balance) << endl;
     }
     else
     {
-      cout << "Your total is $" << total << endl;
-      cout << "Your balance is $" << balance << endl;
+      cout << "Your balance is $" << string_cents(balance) << endl;
       cout << "Not enough change!! Please add more coins." << endl;
-      cout << endl;
     }
+    cout << endl;
   }
+
+  cout << "Thank you for using my Vending Machine Program!" << endl;
 }
