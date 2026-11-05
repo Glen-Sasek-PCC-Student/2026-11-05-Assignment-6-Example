@@ -1,8 +1,8 @@
-#include <bits/stdc++.h>
-using namespace std;
-#include <cmath>
+
 #include <iomanip>
 #include <iostream>
+
+using namespace std;
 
 int main()
 {
