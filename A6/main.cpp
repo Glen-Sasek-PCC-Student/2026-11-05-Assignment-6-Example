@@ -1,10 +1,85 @@
 
 #include <iomanip>
 #include <iostream>
-#include <limits>
 #include <sstream>
 
 using namespace std;
+
+// Configure
+const float TEA_USD = 0.25;
+const float COFFEE_USD = 0.25;
+
+// Function declarations
+string string_cents(float usd);
+void display_beverage_menu();
+void display_order_summary(float balance_usd, float total_usd);
+void display_data(string label, string value, string SEPARATOR = " ");
+bool check_next();
+int add_coins();
+float choice_to_usd();
+
+// Strings
+const string MESSAGE_WELCOME = "Welcome to my Coffee/Tea Vending Machine!";
+const string MESSAGE_GOODBYE = "Thank you for using my Vending Machine Program!";
+const string PROMPT_COIN = "Enter coin - [0 to continue], 5, 10, or 25 only: ";
+const string PROMPT_COUNT = "How many would you like? ";
+const string ERROR_INVALID_VALUE = "Invalid value";
+const string ERROR_BAD_INT = "ERROR, NOT AN INTEGER: ";
+const string ERROR_BAD_CHOICE = "Choice not available";
+const string LABEL_BALANCE_USD = "Your balance is $";
+const string LABEL_TOTAL_USD = "Your total is $";
+const string LABEL_CHANGE_USD = "Your change is $";
+const string OPTIONS_MENU =
+    "Please pick an option ($0.25 each):\n"
+    "    C/c: Coffee\n"
+    "    T/t: Tea\n"
+    "    Q/q: Quit";
+
+int main()
+{
+  float balance_usd = 0.0;
+  float total_usd = 0.0;
+
+  cout << MESSAGE_WELCOME << endl;
+  cout << endl;
+
+  bool next = true;
+  while (next)
+  {
+    int coins = add_coins();
+    balance_usd = static_cast<float>(coins) / 100.0;
+
+    display_data(LABEL_BALANCE_USD, string_cents(balance_usd));
+
+    char choice;
+    display_beverage_menu();
+    cin >> choice;
+    choice = toupper(choice);
+    cout << "    >> " << choice << endl;
+    
+    float item_usd = choice_to_usd(choice);
+    bool item_selected = item_usd > 0;
+
+    if (item_selected)
+    {
+      int item_count = 0;
+      cout << PROMPT_COUNT;
+      cin >> item_count;
+      cout << item_count << endl;
+      total_usd = item_usd * item_count;
+      cout << endl;
+    } else {
+      next = false;
+    }
+
+    display_order_summary(balance_usd, total_usd);
+    next = total_usd > balance_usd;
+  }
+
+  cout << MESSAGE_GOODBYE << endl;
+}
+
+// Function implementations
 
 string string_cents(float usd)
 {
@@ -15,125 +90,100 @@ string string_cents(float usd)
 
 void display_beverage_menu()
 {
-  cout << "Please pick an option ($0.25 each):" << endl;
-  cout << "    C/c: Coffee" << endl;
-  cout << "    T/t: Tea" << endl;
-  cout << "    Q/q: Quit" << endl;
+  cout << OPTIONS_MENU << endl;
 }
 
-int main()
+void display_data(string label, string value, string SEPARATOR = " ")
 {
+  cout << label << SEPARATOR << value << endl;
+}
 
+int add_coins()
+{
+  int cents = 0;
   int coin = 0;
-  int sumCoin = 0;
-  float balance = 0.0;
-  const float tea = 0.25;
-  const float coffee = 0.25;
-  char uc1;
-  int amount = 0;
-  float total = 0.0;
-
-  cout << "Welcome to my Coffee/Tea Vending Machine!" << endl;
-  cout << endl;
-
-  bool next = true;
-  while (next)
+  bool nextCoin = true;
+  while (nextCoin)
   {
+    cout << PROMPT_COIN;
+    cin >> coin;
 
-    bool nextCoin = true;
-    while (nextCoin)
+    // TODO validate integer
+    const int END_SENTINEL = 0;
+
+    enum
     {
-      cout << "Enter coins - 5, 10, or 25 only: ";
-      cin >> coin;
+      NICKEL = 5,
+      DIME = 10,
+      QUARTER = 25
+    };
 
-      // TODO validate integer
-      const int END_SENTINEL = 0;
-
-      enum
+    if (cin)
+    {
+      switch (coin)
       {
-        NICKEL = 5,
-        DIME = 10,
-        QUARTER = 25
-      };
-
-      if (cin)
-      {
-        switch (coin)
-        {
-        case END_SENTINEL: // fallthrough
-          nextCoin = false;
-          break;
-        case NICKEL: // fallthrough
-        case DIME:   // fallthrough
-        case QUARTER:
-          sumCoin = coin + sumCoin;
-          break;
-        default:
-          cout << "Invalid value" << endl;
-        }
+      case END_SENTINEL: // fallthrough
+        nextCoin = false;
+        break;
+      case NICKEL: // fallthrough
+      case DIME:   // fallthrough
+      case QUARTER:
+        cents = coin + cents;
+        break;
+      default:
+        cout << ERROR_INVALID_VALUE << endl;
       }
-      else
-      {
-        cin.clear();
-        // to ignore all to end of line needs #include <limits>
-        // cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        char c = cin.get();
-        cout << "ERROR, NOT AN INTEGER: " << c << endl;
-      }
-    }
-
-    balance = static_cast<float>(sumCoin) / 100.0;
-
-    // Display balance
-    cout << "Your balance is $ " << string_cents(balance) << endl;
-    
-    
-    display_beverage_menu();
-    cin >> uc1;
-    cout << "    >> " << uc1 << endl;
-
-    if ((uc1 == 'c') or (uc1 == 'C'))
-    {
-      cout << "How many would you like? ";
-      cin >> amount;
-      total = (coffee * amount);
-      cout << amount << endl;
-    }
-    else if ((uc1 == 't') or (uc1 == 'T'))
-    {
-      cout << "How many would you like? ";
-      cin >> amount;
-      total = (tea * amount);
-      cout << amount << endl;
-      cout << endl;
-    }
-    else if ((uc1 == 'Q') or (uc1 == 'q'))
-    {
-      cout << "Your total is $" << total << endl;
-      cout << "Your balance is $" << balance << endl;
-      cout << endl;
-      cout << "Thank you for using my Vending Machine Program!" << endl;
     }
     else
     {
-      cout << "Invalid input!!" << endl;
-    }
+      cin.clear();
+      // to ignore all to end of line needs #include <limits>
+      // cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    cout << "Your total is $" << total << endl;
-    if (balance >= total)
+      char c = cin.get();
+      cout << ERROR_BAD_INT << c << endl;
+    }
+  }
+  return cents;
+}
+
+float choice_to_usd(char choice)
+{
+  const char CHOICE_COFFEE = 'C';
+  const char CHOICE_TEA = 'T';
+  const char CHOICE_QUIT = 'Q';
+
+  float usd = 0.00;
+
+  switch (choice)
+  {
+  case CHOICE_COFFEE:
+    usd = COFFEE_USD;
+    break;
+  case CHOICE_TEA:
+    usd = TEA_USD;
+    break;
+  case CHOICE_QUIT:
+    usd = 0.00;
+    break;
+  default:
+    cout << ERROR_BAD_CHOICE << endl;
+  }
+  return usd;
+}
+
+void display_order_summary(float balance_usd, float total_usd) {
+    display_data(LABEL_TOTAL_USD, string_cents(total_usd));
+    if (balance_usd >= total_usd)
     {
-      balance = balance - total;
-      next = false;
-      cout << "Your change is $" << string_cents(balance) << endl;
+      balance_usd = balance_usd - total_usd;
+      display_data(LABEL_CHANGE_USD, string_cents(balance_usd));
     }
     else
     {
-      cout << "Your balance is $" << string_cents(balance) << endl;
+      display_data(LABEL_BALANCE_USD, string_cents(balance_usd));
       cout << "Not enough change!! Please add more coins." << endl;
     }
-    cout << endl;
-  }
 
-  cout << "Thank you for using my Vending Machine Program!" << endl;
+    cout << endl;
 }
